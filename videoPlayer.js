@@ -34,10 +34,46 @@ document.addEventListener('DOMContentLoaded', function() {
           <div class="time-label" id="timeLabel">0:00</div>
   
           <select class="speed-select" id="speedSelect">
-            <option value="0.5">0.5x</option>
-            <option value="1" selected>1x</option>
-            <option value="1.5">1.5x</option>
-            <option value="2">2x</option>
+                <option value="0.1">0.1x</option>
+                <option value="0.2">0.2x</option>
+                <option value="0.3">0.3x</option>
+                <option value="0.4">0.4x</option>
+                <option value="0.5">0.5x</option>
+                <option value="0.6">0.6x</option>
+                <option value="0.7">0.7x</option>
+                <option value="0.8">0.8x</option>
+                <option value="0.9">0.9x</option>
+                <option value="1.0" selected>1x</option>
+                <option value="1.1">1.1x</option>
+                <option value="1.2">1.2x</option>
+                <option value="1.3">1.3x</option>
+                <option value="1.4">1.4x</option>
+                <option value="1.5">1.5x</option>
+                <option value="1.6">1.6x</option>
+                <option value="1.7">1.7x</option>
+                <option value="1.8">1.8x</option>
+                <option value="1.9">1.9x</option>
+                <option value="2.0">2x</option>
+                <option value="2.1">2.1x</option>
+                <option value="2.2">2.2x</option>
+                <option value="2.3">2.3x</option>
+                <option value="2.4">2.4x</option>
+                <option value="2.5">2.5x</option>
+                <option value="2.6">2.6x</option>
+                <option value="2.7">2.7x</option>
+                <option value="2.8">2.8x</option>
+                <option value="2.9">2.9x</option>
+                <option value="3.0">3x</option>
+                <option value="3.1">3.1x</option>
+                <option value="3.2">3.2x</option>
+                <option value="3.3">3.3x</option>
+                <option value="3.4">3.4x</option>
+                <option value="3.5">3.5x</option>
+                <option value="3.6">3.6x</option>
+                <option value="3.7">3.7x</option>
+                <option value="3.8">3.8x</option>
+                <option value="3.9">3.9x</option>
+                <option value="4.0">4x</option>
           </select>
   
           <!-- 볼륨 버튼 -->
