@@ -1,7 +1,9 @@
 /* videoPlayer.css */
 
 * {
-    margin: 0; padding: 0; box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
   body {
     background: #fff;
@@ -11,6 +13,8 @@
     height: 100vh;
     font-family: sans-serif;
   }
+  
+  /* 플레이어 컨테이너 */
   .player-container {
     width: 1200px;
     max-width: 95%;
@@ -49,7 +53,8 @@
   
   /* 재생/일시정지 버튼 */
   .play-button {
-    width: 0; height: 0;
+    width: 0;
+    height: 0;
     border-top: 16px solid transparent;
     border-bottom: 16px solid transparent;
     border-left: 26px solid #007BFF;
@@ -84,24 +89,30 @@
   }
   .progress-buffered {
     position: absolute;
-    top: 0; left: 0;
-    width: 0%; height: 100%;
-    background: rgba(255,255,255,0.192);
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.192);
     transition: width 0.2s;
     pointer-events: none;
   }
   .progress-filled {
     position: absolute;
-    top: 0; left: 0;
-    width: 0%; height: 100%;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 100%;
     background: #007BFF;
     transition: width 0.1s;
     pointer-events: none;
   }
   .progress-thumb {
     position: absolute;
-    top: 50%; left: 0;
-    width: 14px; height: 14px;
+    top: 50%;
+    left: 0;
+    width: 14px;
+    height: 14px;
     background: #2e93ff;
     border-radius: 50%;
     transform: translate(-50%, -50%);
@@ -135,21 +146,25 @@
   
   /* 볼륨 버튼 */
   .volume-button {
-    width: 36px; height: 36px;
+    width: 36px;
+    height: 36px;
     background: #007BFF;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     filter: drop-shadow(0 0 6px rgba(0,0,0,0.8));
     transition: all 0.3s;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
   }
   .volume-button:hover {
     background: #005bbd;
   }
   .volume-button svg {
-    width: 20px; height: 20px;
+    width: 20px;
+    height: 20px;
     position: absolute;
   }
   
@@ -157,7 +172,7 @@
   .volume-popup {
     display: none;
     position: absolute;
-    bottom: 100%;  /* 버튼 위쪽에 표시 */
+    bottom: 100%; /* 버튼 바로 위 */
     left: 50%;
     transform: translateX(-50%);
     margin-bottom: 8px;
@@ -173,28 +188,32 @@
     height: 100px;
     background: #ccc;
     cursor: pointer;
-    /* 세로 슬라이더 (브라우저별 지원 차이 있을 수 있음) */
+    /* 브라우저별 세로 슬라이더 지원 차이 있음 */
     writing-mode: bt-lr;
     -webkit-appearance: slider-vertical;
   }
   
   /* 전체화면 버튼 */
   .fullscreen-button {
-    width: 36px; height: 36px;
+    width: 36px;
+    height: 36px;
     background: #007BFF;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     filter: drop-shadow(0 0 6px rgba(0,0,0,0.8));
     transition: all 0.3s;
-    display: flex; align-items: center; justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
   }
   .fullscreen-button:hover {
     background: #005bbd;
   }
   .fullscreen-button svg {
-    width: 20px; height: 20px;
+    width: 20px;
+    height: 20px;
     transition: opacity 0.3s;
     position: absolute;
   }
