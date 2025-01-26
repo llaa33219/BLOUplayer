@@ -192,3 +192,29 @@
     to   { transform: scale(0.95); }
   }
   
+  /* (추가) 볼륨 컨테이너 & 볼륨 슬라이더 */
+  .volume-container {
+    display: flex;
+    align-items: center;
+  }
+  .volume-slider {
+    width: 100px;
+    cursor: pointer;
+    -webkit-appearance: none; /* 크롬, 사파리 기본 슬라이더 제거 */
+    background: transparent;
+  }
+  .volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #2e93ff;
+    cursor: pointer;
+    filter: drop-shadow(0 2px 5px rgba(0,0,0,0.7));
+  }
+  .volume-slider::-webkit-slider-runnable-track {
+    height: 4px;
+    background: #007BFF;
+    border-radius: 2px;
+  }
+  
