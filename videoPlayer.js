@@ -44,7 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
           <button class="volume-button" id="volumeBtn">
             <svg width="24" height="24" viewBox="0 0 56 56">
               <!-- (a) 스피커 본체 -->
-              <path
+              <path fill="#FFF"
                 id="speaker"
                 d="M 21.6412 47.5985
                    C 22.9575 47.5985 23.9060 46.6307 23.9060 45.3338
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
                    Z"
               />
               <!-- (b) 파동1 (가장 안쪽) -->
-              <path
+              <path fill="#FFF"
                 id="wave1"
                 d="M 32.6360 38.4233
                    C 33.2941 38.8878 34.2426 38.7330 34.8039 37.9781
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
                    Z"
               />
               <!-- (c) 파동2 (중간) -->
-              <path
+              <path fill="#FFF"
                 id="wave2"
                 d="M 40.3595 43.6497
                    C 41.1143 44.1530 42.0436 43.9594 42.5855 43.1851
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
                    Z"
               />
               <!-- (d) 파동3 (가장 바깥) -->
-              <path
+              <path fill="#FFF"
                 id="wave3"
                 d="M 48.1605 48.9342
                    C 48.8765 49.4181 49.8252 49.2245 50.3865 48.4309
