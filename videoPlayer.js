@@ -1,27 +1,24 @@
-/* videoPlayer.js */
-
-/****************************************************************************
- * (1) DOMContentLoaded 안에서 모든 작업 실행: 자동 래핑 + 원본 코드 + 볼륨 버튼
- ****************************************************************************/
 document.addEventListener('DOMContentLoaded', function() {
 
-    /* -------------------------------
-     (A) <video> 자동 래핑
-    ------------------------------- */
+    /** (1) 자동 래핑 **/
     const videoTag = document.querySelector('video:not(#myVideo)');
     if (videoTag) {
-      videoTag.removeAttribute('controls'); // 커스텀 컨트롤 쓰려면 기본 controls 제거
+      // 기본 컨트롤 제거
+      videoTag.removeAttribute('controls');
   
+      // 래퍼 생성
       const container = document.createElement('div');
       container.classList.add('player-container');
       container.id = 'playerContainer';
   
+      // video를 container로 감싸기
       videoTag.parentNode.insertBefore(container, videoTag);
       container.appendChild(videoTag);
   
+      // myVideo id 부여
       videoTag.id = 'myVideo';
   
-      // .controls 내에 볼륨 버튼 + 슬라이더 팝업 추가
+      // .controls + 볼륨 버튼/팝업
       container.insertAdjacentHTML('beforeend', `
         <div class="controls">
           <div class="play-button" id="playBtn"></div>
@@ -38,13 +35,10 @@ document.addEventListener('DOMContentLoaded', function() {
             <option value="2">2x</option>
           </select>
   
-          <!-- 볼륨 버튼 + 팝업 -->
           <button class="volume-button" id="volumeBtn">
             <svg viewBox="0 0 24 24" fill="none">
-              <!-- 스피커 아이콘 (예시) -->
               <path d="M7 9v6h4l5 5V4l-5 5H7z" fill="#FFF"/>
             </svg>
-            <!-- 팝업(기본 display:none) -->
             <div class="volume-popup" id="volumePopup">
               <input
                 type="range"
@@ -75,10 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
       `);
     }
   
-  
-    /* -------------------------------
-     (B) 원본 코드 + 볼륨 추가 로직
-    ------------------------------- */
+    /** (2) 기존 요소들 가져오기 **/
     const video = document.getElementById('myVideo');
     const playBtn = document.getElementById('playBtn');
     const progressBar = document.getElementById('progressBar');
@@ -90,13 +81,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const playerContainer = document.getElementById('playerContainer');
     const speedSelect = document.getElementById('speedSelect');
   
-    /* 볼륨 버튼 & 팝업 */
+    // 볼륨 버튼/팝업
     const volumeBtn = document.getElementById('volumeBtn');
     const volumePopup = document.getElementById('volumePopup');
     const volumeSlider = document.getElementById('volumeSlider');
   
     let isHoveringProgress = false;
     let isFullscreen = false;
+  
+    /** (3) 원본 플레이어 로직 + 볼륨 기능 **/
   
     function togglePlay() {
       if (!video) return;
@@ -202,40 +195,67 @@ document.addEventListener('DOMContentLoaded', function() {
       return m + ":" + (s < 10 ? "0" + s : s);
     }
   
+    /** 볼륨 관련 **/
+    function toggleVolumePopup() {
+      if (!volumePopup) return;
+      volumePopup.classList.toggle('show');
+    }
+    function handleVolumeChange(e) {
+      if (!video) return;
+      video.volume = parseFloat(e.target.value);
+    }
+  
+    /**
+     * (4) 마우스 이동 시 컨트롤 표시/숨김
+     *  - 하단 80px 범위 안이거나
+     *  - 볼륨 버튼/팝업 영역 위에 마우스가 있으면 -> show-controls 유지
+     */
     function handleMouseMove(e) {
       if (!playerContainer) return;
-      const rect = playerContainer.getBoundingClientRect();
-      const bottomThreshold = rect.bottom - 80;
-      if (e.clientY >= bottomThreshold && e.clientY <= rect.bottom) {
+  
+      const containerRect = playerContainer.getBoundingClientRect();
+      const bottomThreshold = containerRect.bottom - 80;
+  
+      // ① 하단 범위 안인지 확인
+      let isOverBottomArea = ( 
+        e.clientY >= bottomThreshold && 
+        e.clientY <= containerRect.bottom 
+      );
+  
+      // ② "볼륨 팝업" 또는 "볼륨 버튼" 위에 있는지 확인
+      let isOverVolume = false;
+      if (volumePopup?.classList.contains('show')) {
+        // volumePopup 사각영역
+        const vpRect = volumePopup.getBoundingClientRect();
+        if (
+          e.clientX >= vpRect.left && e.clientX <= vpRect.right &&
+          e.clientY >= vpRect.top && e.clientY <= vpRect.bottom
+        ) {
+          isOverVolume = true;
+        }
+      }
+      // volumeBtn 사각영역도 포함 (팝업 열려있지 않아도 버튼 위면 숨기지 않음)
+      if (volumeBtn) {
+        const vbRect = volumeBtn.getBoundingClientRect();
+        if (
+          e.clientX >= vbRect.left && e.clientX <= vbRect.right &&
+          e.clientY >= vbRect.top && e.clientY <= vbRect.bottom
+        ) {
+          isOverVolume = true;
+        }
+      }
+  
+      // 둘 중 하나라도 true면 컨트롤 보이기
+      if (isOverBottomArea || isOverVolume) {
         playerContainer.classList.add('show-controls');
       } else {
         playerContainer.classList.remove('show-controls');
-        // 볼륨 팝업도 자동으로 닫고 싶다면 여기서 volumePopup?.classList.remove('show');
+        // 필요하다면 볼륨 팝업도 자동 닫기
+        // volumePopup?.classList.remove('show');
       }
     }
   
-    /* 볼륨 슬라이더 변경 */
-    function handleVolumeChange(e) {
-      if (!video) return;
-      const newVolume = parseFloat(e.target.value);
-      video.volume = newVolume;
-    }
-  
-    /* 볼륨 버튼 클릭 -> 팝업 토글 */
-    function toggleVolumePopup() {
-      if (!volumePopup) return;
-      // show 클래스 토글
-      if (volumePopup.classList.contains('show')) {
-        volumePopup.classList.remove('show');
-      } else {
-        volumePopup.classList.add('show');
-      }
-    }
-  
-    /* -------------------------------
-     (C) 이벤트 연결
-    ------------------------------- */
-    // 재생/일시정지
+    /** (5) 이벤트 연결 **/
     playBtn?.addEventListener('click', togglePlay);
     video?.addEventListener('play', updatePlayButton);
     video?.addEventListener('pause', updatePlayButton);
@@ -243,29 +263,23 @@ document.addEventListener('DOMContentLoaded', function() {
     video?.addEventListener('progress', updateProgress);
     video?.addEventListener('loadedmetadata', updateProgress);
   
-    // 진행 바
     progressBar?.addEventListener('click', seekVideo);
     progressBar?.addEventListener('mousemove', handleProgressHover);
     progressBar?.addEventListener('mouseleave', handleProgressLeave);
   
-    // 재생속도
     speedSelect?.addEventListener('change', handleSpeedChange);
   
-    // 볼륨
     volumeBtn?.addEventListener('click', toggleVolumePopup);
     volumeSlider?.addEventListener('input', handleVolumeChange);
   
-    // 전체화면
     fullscreenBtn?.addEventListener('click', toggleFullscreen);
   
-    // 마우스 이동 -> 컨트롤 표시/숨김
     document.addEventListener('mousemove', handleMouseMove);
   
-    // 초기화
+    // 초기값
     updatePlayButton();
     updateProgress();
     handleSpeedChange();
     if (video) video.volume = 1.0;
-  
   });
   
