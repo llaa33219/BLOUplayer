@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
 
     /************************************************************
-     * (1) 자동 래핑
+     * (1) <video> 자동 래핑
      ************************************************************/
     const videoTag = document.querySelector('video:not(#myVideo)');
     if (videoTag) {
-      videoTag.removeAttribute('controls'); // 기본 브라우저 controls 제거
+      // 기본 controls 제거 -> 커스텀 UI만 표시
+      videoTag.removeAttribute('controls');
   
       // .player-container 생성
       const container = document.createElement('div');
@@ -16,18 +17,20 @@ document.addEventListener('DOMContentLoaded', function() {
       videoTag.parentNode.insertBefore(container, videoTag);
       container.appendChild(videoTag);
   
-      // id="myVideo"를 붙여서 기존 코드가 찾을 수 있게 함
+      // id="myVideo"를 붙여서, 원본 코드가 찾을 수 있게 함
       videoTag.id = 'myVideo';
   
-      // .controls 영역 + 볼륨 버튼/팝업 + 볼륨 아이콘 path
+      // .controls HTML (볼륨 버튼, 팝업, 아이콘 path ID 등)
       container.insertAdjacentHTML('beforeend', `
         <div class="controls">
           <div class="play-button" id="playBtn"></div>
+  
           <div class="progress-container" id="progressBar">
             <div class="progress-buffered" id="progressBuffered"></div>
             <div class="progress-filled" id="progressFilled"></div>
             <div class="progress-thumb" id="progressThumb"></div>
           </div>
+  
           <div class="time-label" id="timeLabel">0:00</div>
   
           <select class="speed-select" id="speedSelect">
@@ -37,12 +40,14 @@ document.addEventListener('DOMContentLoaded', function() {
             <option value="2">2x</option>
           </select>
   
-          <!-- 볼륨 버튼/팝업 -->
+          <!-- 볼륨 버튼/아이콘 -->
           <button class="volume-button" id="volumeBtn">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <!-- 여기서 <path>만 갈아끼우도록, id="volumeIconPath" 부여 -->
-              <path id="volumeIconPath" d="" fill="#FFF" />
+            <!-- 스피커 + 파동/슬래시를 위해 한 개의 <path>만 동적으로 바꿀 것 -->
+            <svg width="24" height="24" viewBox="0 0 24 24">
+              <path id="volumeIconPath" d="" fill="#FFF"/>
             </svg>
+  
+            <!-- 팝업(세로 슬라이더) -->
             <div class="volume-popup" id="volumePopup">
               <input
                 type="range"
@@ -71,8 +76,9 @@ document.addEventListener('DOMContentLoaded', function() {
       `);
     }
   
+  
     /************************************************************
-     * (2) DOM 요소 참조
+     * (2) DOM 요소 가져오기
      ************************************************************/
     const video = document.getElementById('myVideo');
     const playBtn = document.getElementById('playBtn');
@@ -85,7 +91,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const playerContainer = document.getElementById('playerContainer');
     const speedSelect = document.getElementById('speedSelect');
   
-    // 볼륨 관련
+    // 볼륨 버튼/팝업/슬라이더 + 아이콘 Path
     const volumeBtn = document.getElementById('volumeBtn');
     const volumePopup = document.getElementById('volumePopup');
     const volumeSlider = document.getElementById('volumeSlider');
@@ -94,37 +100,51 @@ document.addEventListener('DOMContentLoaded', function() {
     let isHoveringProgress = false;
     let isFullscreen = false;
   
-    /************************************************************
-     * (3) 볼륨 아이콘 Path 데이터 (단순 예시)
-     ************************************************************/
-    const PATH_MUTE   = "M7 9v6h4l5 5V4l-5 5H7z";
-    // 작게 파동(대충 만든 예)
-    const PATH_LOW    = "M7 9v6h4l5 5V4l-5 5H7z M19 12c0 .5-.2 1-.5 1.4";
-    // 중간 파동
-    const PATH_MEDIUM = "M7 9v6h4l5 5V4l-5 5H7z M19 9.23c.81 1.19 1.3 2.61 1.3 4.18s-.49 3-1.3 4.18";
-    // 큰 파동
-    const PATH_HIGH   = "M7 9v6h4l5 5V4l-5 5H7z M19 9.23c.81 1.19 1.3 2.61 1.3 4.18s-.49 3-1.3 4.18 M22 7c1.35 2.1 2.05 4.5 2.05 6.82s-.7 4.73-2.05 6.82";
   
-    // 현재 비디오 볼륨(v) = 0~1에 따라 아이콘을 변경
+    /************************************************************
+     * (3) 볼륨 아이콘 Path 데이터 (스피커 본체 + 파동/슬래시)
+     *     - line 굵기가 최대한 일정하도록 다듬음
+     ************************************************************/
+    // 스피커 본체는 "M7 9v6h4l5 5V4l-5 5H7z" 로 고정
+    // 그 뒤에 파동/슬래시를 추가로 그린다
+    const PATH_SPEAKER = "M7 9v6h4l5 5V4l-5 5H7z";
+  
+    // 음소거 (스피커 + 대각선 슬래시)
+    const PATH_MUTE = PATH_SPEAKER + " M14 9l-5 5"; 
+    // 낮은 파동
+    const PATH_LOW = PATH_SPEAKER + " M19 12c0 .5-.2 1-.5 1.4";
+    // 중간 파동
+    const PATH_MEDIUM = PATH_SPEAKER + " M19 9.23c.81 1.19 1.3 2.61 1.3 4.18s-.49 3-1.3 4.18";
+    // 큰 파동
+    const PATH_HIGH = PATH_SPEAKER + " M19 9.23c.81 1.19 1.3 2.61 1.3 4.18s-.49 3-1.3 4.18 M22 7c1.35 2.1 2.05 4.5 2.05 6.82s-.7 4.73-2.05 6.82";
+  
+  
+    // 볼륨(0~1)에 따라 아이콘 path 변경
     function updateVolumeIcon() {
       if (!video || !volumeIconPath) return;
       const v = video.volume;
-      let pathData = "";
   
+      let pathData = "";
       if (v === 0) {
+        // 뮤트
         pathData = PATH_MUTE;
       } else if (v < 0.3) {
+        // 낮은 파동
         pathData = PATH_LOW;
       } else if (v < 0.7) {
+        // 중간 파동
         pathData = PATH_MEDIUM;
       } else {
+        // 높은 파동
         pathData = PATH_HIGH;
       }
+  
       volumeIconPath.setAttribute("d", pathData);
     }
   
+  
     /************************************************************
-     * (4) 기존 플레이어 로직
+     * (4) 원본(재생/전체화면/진행바) 로직
      ************************************************************/
     function togglePlay() {
       if (!video) return;
@@ -232,35 +252,36 @@ document.addEventListener('DOMContentLoaded', function() {
       return m + ":" + (s < 10 ? "0" + s : s);
     }
   
+  
     /************************************************************
-     * (5) 볼륨 팝업 / 슬라이더
+     * (5) 볼륨 팝업/슬라이더
      ************************************************************/
     function toggleVolumePopup() {
       if (!volumePopup) return;
       volumePopup.classList.toggle('show');
     }
+  
     function handleVolumeChange(e) {
       if (!video) return;
       video.volume = parseFloat(e.target.value);
-      updateVolumeIcon(); // 볼륨 변경 → 아이콘 갱신
+      updateVolumeIcon(); // 볼륨 값 바뀔 때마다 아이콘 갱신
     }
+  
   
     /************************************************************
      * (6) 마우스 이동 -> 컨트롤 표시/숨김
-     *     하단 80px 범위 or 볼륨 버튼/팝업 위이면 보이게
+     *   - 하단 80px or 볼륨 버튼/팝업 위면 .show-controls
      ************************************************************/
     function handleMouseMove(e) {
       if (!playerContainer) return;
-  
       const rect = playerContainer.getBoundingClientRect();
       const bottomThreshold = rect.bottom - 80;
   
-      // (1) 하단 영역에 있는지
+      // 하단 범위
       const isOverBottom = (e.clientY >= bottomThreshold && e.clientY <= rect.bottom);
   
-      // (2) 볼륨 버튼/팝업 영역에 있는지
+      // 볼륨 버튼/팝업 영역
       let isOverVolume = false;
-      // 볼륨 버튼 범위
       if (volumeBtn) {
         const vb = volumeBtn.getBoundingClientRect();
         if (
@@ -270,7 +291,6 @@ document.addEventListener('DOMContentLoaded', function() {
           isOverVolume = true;
         }
       }
-      // 볼륨 팝업이 열려 있다면, 그 영역도 확인
       if (volumePopup?.classList.contains('show')) {
         const vp = volumePopup.getBoundingClientRect();
         if (
@@ -281,14 +301,15 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       }
   
-      // (3) 둘 중 하나라도 true면 show-controls 유지
+      // 둘 중 하나라도 true면 show-controls 유지
       if (isOverBottom || isOverVolume) {
         playerContainer.classList.add('show-controls');
       } else {
         playerContainer.classList.remove('show-controls');
-        // 필요 시 볼륨 팝업도 닫기 => volumePopup?.classList.remove('show');
+        // 필요 시 volumePopup?.classList.remove('show');
       }
     }
+  
   
     /************************************************************
      * (7) 이벤트 연결
@@ -313,12 +334,13 @@ document.addEventListener('DOMContentLoaded', function() {
   
     document.addEventListener('mousemove', handleMouseMove);
   
+  
     /************************************************************
      * (8) 초기화
      ************************************************************/
     if (video) {
-      video.volume = 1.0;         // 초기 볼륨 100%
-      updateVolumeIcon();         // 아이콘도 갱신
+      video.volume = 1.0;  // 기본 볼륨 100%
+      updateVolumeIcon();  // 초기 아이콘 갱신
     }
     updatePlayButton();
     updateProgress();

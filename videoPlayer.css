@@ -172,7 +172,7 @@
   .volume-popup {
     display: none;
     position: absolute;
-    bottom: 100%; /* 버튼 바로 위 */
+    bottom: 100%; /* 버튼 바로 위쪽 */
     left: 50%;
     transform: translateX(-50%);
     margin-bottom: 8px;
@@ -188,8 +188,7 @@
     height: 100px;
     background: #ccc;
     cursor: pointer;
-    /* 브라우저별 세로 슬라이더 지원 차이 있음 */
-    writing-mode: bt-lr;
+    writing-mode: bt-lr;           /* 세로 슬라이더(브라우저마다 다를 수 있음) */
     -webkit-appearance: slider-vertical;
   }
   
