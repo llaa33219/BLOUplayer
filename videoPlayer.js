@@ -107,16 +107,17 @@ document.addEventListener('DOMContentLoaded', function() {
      ************************************************************/
     // 스피커 본체는 "M7 9v6h4l5 5V4l-5 5H7z" 로 고정
     // 그 뒤에 파동/슬래시를 추가로 그린다
-    const PATH_SPEAKER = "M7 9v6h4l5 5V4l-5 5H7z";
-  
+    // (3) 볼륨 아이콘 Path 데이터 수정
+    const PATH_SPEAKER = "M9 8v8h3l4 4V4l-4 4H9z"; // 단순화된 스피커 모양
+
     // 음소거 (스피커 + 대각선 슬래시)
-    const PATH_MUTE = PATH_SPEAKER + " M14 9l-5 5"; 
-    // 낮은 파동
-    const PATH_LOW = PATH_SPEAKER + " M19 12c0 .5-.2 1-.5 1.4";
-    // 중간 파동
-    const PATH_MEDIUM = PATH_SPEAKER + " M19 9.23c.81 1.19 1.3 2.61 1.3 4.18s-.49 3-1.3 4.18";
-    // 큰 파동
-    const PATH_HIGH = PATH_SPEAKER + " M19 9.23c.81 1.19 1.3 2.61 1.3 4.18s-.49 3-1.3 4.18 M22 7c1.35 2.1 2.05 4.5 2.05 6.82s-.7 4.73-2.05 6.82";
+    const PATH_MUTE = PATH_SPEAKER + "M4 20L20 4"; 
+    // 낮은 파동 (1직선)
+    const PATH_LOW = PATH_SPEAKER + "M17 12h4";
+    // 중간 파동 (2직선)
+    const PATH_MEDIUM = PATH_SPEAKER + "M17 10h4 M17 14h4";
+    // 큰 파동 (3직선)
+    const PATH_HIGH = PATH_SPEAKER + "M17 8h4 M17 12h4 M17 16h4";
   
   
     // 볼륨(0~1)에 따라 아이콘 path 변경
