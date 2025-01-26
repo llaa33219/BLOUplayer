@@ -1,30 +1,27 @@
-/************************************************************
- * videoPlayer.js
- *  - 자동 래핑 + 볼륨 슬라이더 + 기존 플레이어 로직
- *  - 전부 DOMContentLoaded 안에서 실행하여 null 오류 해결
- ************************************************************/
+/* videoPlayer.js */
+
+/****************************************************************************
+ * (1) DOMContentLoaded 안에서 모든 작업 실행: 자동 래핑 + 원본 코드 + 볼륨 버튼
+ ****************************************************************************/
 document.addEventListener('DOMContentLoaded', function() {
-  
-    /************************************************************
-     * (1) 자동 래핑 코드
-     *   - <video>를 감싸서 .player-container, .controls 등 자동 생성
-     ************************************************************/
+
+    /* -------------------------------
+     (A) <video> 자동 래핑
+    ------------------------------- */
     const videoTag = document.querySelector('video:not(#myVideo)');
     if (videoTag) {
-      // (A) 커스텀 컨트롤을 쓸 거라면, 기본 controls 제거
-      videoTag.removeAttribute('controls');
-      
-      // (B) .player-container 생성 후 <video> 감싸기
+      videoTag.removeAttribute('controls'); // 커스텀 컨트롤 쓰려면 기본 controls 제거
+  
       const container = document.createElement('div');
       container.classList.add('player-container');
       container.id = 'playerContainer';
+  
       videoTag.parentNode.insertBefore(container, videoTag);
       container.appendChild(videoTag);
   
-      // (C) 원본 코드가 id="myVideo"를 찾으므로, 여기서 부여
       videoTag.id = 'myVideo';
   
-      // (D) .controls HTML 추가 (볼륨 슬라이더 포함)
+      // .controls 내에 볼륨 버튼 + 슬라이더 팝업 추가
       container.insertAdjacentHTML('beforeend', `
         <div class="controls">
           <div class="play-button" id="playBtn"></div>
@@ -40,10 +37,26 @@ document.addEventListener('DOMContentLoaded', function() {
             <option value="1.5">1.5x</option>
             <option value="2">2x</option>
           </select>
-          <!-- (추가) 볼륨 슬라이더 -->
-          <div class="volume-container">
-            <input type="range" id="volumeSlider" class="volume-slider" min="0" max="1" step="0.05" value="1" />
-          </div>
+  
+          <!-- 볼륨 버튼 + 팝업 -->
+          <button class="volume-button" id="volumeBtn">
+            <svg viewBox="0 0 24 24" fill="none">
+              <!-- 스피커 아이콘 (예시) -->
+              <path d="M7 9v6h4l5 5V4l-5 5H7z" fill="#FFF"/>
+            </svg>
+            <!-- 팝업(기본 display:none) -->
+            <div class="volume-popup" id="volumePopup">
+              <input
+                type="range"
+                id="volumeSlider"
+                class="volume-slider-vertical"
+                min="0"
+                max="1"
+                step="0.05"
+                value="1" />
+            </div>
+          </button>
+  
           <button class="fullscreen-button" id="fullscreenBtn">
             <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
               <path d="M3 3H9V5H5V9H3V3Z" fill="#FFF" />
@@ -62,12 +75,10 @@ document.addEventListener('DOMContentLoaded', function() {
       `);
     }
   
-    
-    /************************************************************
-     * (2) 원본 플레이어 로직 + 볼륨슬라이더 이벤트
-     ************************************************************/
   
-    // 이제 DOM에 #myVideo, #playerContainer 등이 생성된 상태이므로, 여기서부터 가져옴
+    /* -------------------------------
+     (B) 원본 코드 + 볼륨 추가 로직
+    ------------------------------- */
     const video = document.getElementById('myVideo');
     const playBtn = document.getElementById('playBtn');
     const progressBar = document.getElementById('progressBar');
@@ -78,6 +89,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const fullscreenBtn = document.getElementById('fullscreenBtn');
     const playerContainer = document.getElementById('playerContainer');
     const speedSelect = document.getElementById('speedSelect');
+  
+    /* 볼륨 버튼 & 팝업 */
+    const volumeBtn = document.getElementById('volumeBtn');
+    const volumePopup = document.getElementById('volumePopup');
     const volumeSlider = document.getElementById('volumeSlider');
   
     let isHoveringProgress = false;
@@ -188,54 +203,69 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   
     function handleMouseMove(e) {
-      // playerContainer가 없을 때(래핑 실패 시) 예외처리
       if (!playerContainer) return;
-  
       const rect = playerContainer.getBoundingClientRect();
       const bottomThreshold = rect.bottom - 80;
       if (e.clientY >= bottomThreshold && e.clientY <= rect.bottom) {
         playerContainer.classList.add('show-controls');
       } else {
         playerContainer.classList.remove('show-controls');
+        // 볼륨 팝업도 자동으로 닫고 싶다면 여기서 volumePopup?.classList.remove('show');
       }
     }
   
-    /***********************************************************
-     * (추가) 볼륨 슬라이더
-     ***********************************************************/
+    /* 볼륨 슬라이더 변경 */
     function handleVolumeChange(e) {
       if (!video) return;
-      const newVolume = parseFloat(e.target.value); // 0~1
+      const newVolume = parseFloat(e.target.value);
       video.volume = newVolume;
     }
   
-    /***********************************************************
-     * (3) 이벤트 리스너 연결
-     ***********************************************************/
-    if (playBtn)    playBtn.addEventListener('click', togglePlay);
-    if (video) {
-      video.addEventListener('play', updatePlayButton);
-      video.addEventListener('pause', updatePlayButton);
-      video.addEventListener('timeupdate', updateProgress);
-      video.addEventListener('progress', updateProgress);
-      video.addEventListener('loadedmetadata', updateProgress);
+    /* 볼륨 버튼 클릭 -> 팝업 토글 */
+    function toggleVolumePopup() {
+      if (!volumePopup) return;
+      // show 클래스 토글
+      if (volumePopup.classList.contains('show')) {
+        volumePopup.classList.remove('show');
+      } else {
+        volumePopup.classList.add('show');
+      }
     }
-    if (progressBar) {
-      progressBar.addEventListener('click', seekVideo);
-      progressBar.addEventListener('mousemove', handleProgressHover);
-      progressBar.addEventListener('mouseleave', handleProgressLeave);
-    }
-    if (speedSelect)  speedSelect.addEventListener('change', handleSpeedChange);
-    if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
+  
+    /* -------------------------------
+     (C) 이벤트 연결
+    ------------------------------- */
+    // 재생/일시정지
+    playBtn?.addEventListener('click', togglePlay);
+    video?.addEventListener('play', updatePlayButton);
+    video?.addEventListener('pause', updatePlayButton);
+    video?.addEventListener('timeupdate', updateProgress);
+    video?.addEventListener('progress', updateProgress);
+    video?.addEventListener('loadedmetadata', updateProgress);
+  
+    // 진행 바
+    progressBar?.addEventListener('click', seekVideo);
+    progressBar?.addEventListener('mousemove', handleProgressHover);
+    progressBar?.addEventListener('mouseleave', handleProgressLeave);
+  
+    // 재생속도
+    speedSelect?.addEventListener('change', handleSpeedChange);
+  
+    // 볼륨
+    volumeBtn?.addEventListener('click', toggleVolumePopup);
+    volumeSlider?.addEventListener('input', handleVolumeChange);
+  
+    // 전체화면
+    fullscreenBtn?.addEventListener('click', toggleFullscreen);
+  
+    // 마우스 이동 -> 컨트롤 표시/숨김
     document.addEventListener('mousemove', handleMouseMove);
   
-    if (volumeSlider) {
-      volumeSlider.addEventListener('input', handleVolumeChange);
-    }
-  
-    // (4) 초기화 호출
+    // 초기화
     updatePlayButton();
     updateProgress();
     handleSpeedChange();
+    if (video) video.volume = 1.0;
+  
   });
   
