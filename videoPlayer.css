@@ -1,7 +1,4 @@
-/* videoPlayer.css */
-
-/* 전역이 아닌 플레이어 컨테이너에만 적용 */
-.player-container, 
+.player-container,
 .player-container * {
   margin: 0;
   padding: 0;
@@ -19,11 +16,14 @@
   filter: drop-shadow(0 0 6px rgba(0,0,0,0.5));
 }
 
+/* (★ video 태그에 강제 width/height를 적용하지 않음)
+   사용자가 inline 스타일로 (width, height 등)을 지정하면
+   그 값을 .player-container가 대신 받도록 JS에서 처리함 */
 video {
-  width: 100%;
-  height: auto;
   display: block;
   background: #000;
+  width: 100%;
+  height: auto;
 }
 
 /* 컨트롤 바 */
@@ -183,7 +183,7 @@ video {
   height: 100px;
   background: #ccc;
   cursor: pointer;
-  writing-mode: bt-lr;           /* 세로 슬라이더(브라우저마다 다를 수 있음) */
+  writing-mode: bt-lr; /* 세로 슬라이더(브라우저마다 다를 수 있음) */
   -webkit-appearance: slider-vertical;
 }
 

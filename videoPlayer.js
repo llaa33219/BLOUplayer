@@ -13,6 +13,20 @@ document.addEventListener('DOMContentLoaded', function() {
     container.classList.add('player-container');
     container.id = 'playerContainer';
 
+    // **[추가] video에 inline style 있으면 container로 옮기기**
+    const inlineStyle = videoTag.getAttribute('style');
+    if (inlineStyle) {
+      container.setAttribute('style', inlineStyle);
+      videoTag.removeAttribute('style');
+    }
+
+    // **[추가] video에 class가 있으면 container로 옮기기**
+    const videoClasses = videoTag.className.trim();
+    if (videoClasses) {
+      container.className += ' ' + videoClasses;
+      videoTag.className = '';
+    }
+
     // video를 감싸기
     videoTag.parentNode.insertBefore(container, videoTag);
     container.appendChild(videoTag);
@@ -386,15 +400,19 @@ document.addEventListener('DOMContentLoaded', function() {
     let isOverVolume = false;
     if (volumeBtn) {
       const vb = volumeBtn.getBoundingClientRect();
-      if (e.clientX >= vb.left && e.clientX <= vb.right &&
-          e.clientY >= vb.top && e.clientY <= vb.bottom) {
+      if (
+        e.clientX >= vb.left && e.clientX <= vb.right &&
+        e.clientY >= vb.top && e.clientY <= vb.bottom
+      ) {
         isOverVolume = true;
       }
     }
     if (volumePopup?.classList.contains('show')) {
       const vp = volumePopup.getBoundingClientRect();
-      if (e.clientX >= vp.left && e.clientX <= vp.right &&
-          e.clientY >= vp.top && e.clientY <= vp.bottom) {
+      if (
+        e.clientX >= vp.left && e.clientX <= vp.right &&
+        e.clientY >= vp.top && e.clientY <= vp.bottom
+      ) {
         isOverVolume = true;
       }
     }
@@ -446,187 +464,201 @@ document.addEventListener('DOMContentLoaded', function() {
 * (★추가) 새로 생성되는 <video>에 대해서도 동일 래핑
 ************************************************************/
 function wrapVideoElement(newVideoTag) {
-// 이미 #myVideo라면 중복 처리 X
-if (!newVideoTag || newVideoTag.id === 'myVideo') return;
+  // 이미 #myVideo라면 중복 처리 X
+  if (!newVideoTag || newVideoTag.id === 'myVideo') return;
 
-// (1) 기존 래핑 로직 그대로 수행
-newVideoTag.removeAttribute('controls');
+  // (1) 기존 래핑 로직 그대로 수행
+  newVideoTag.removeAttribute('controls');
 
-const container = document.createElement('div');
-container.classList.add('player-container');
-container.id = 'playerContainer';
+  const container = document.createElement('div');
+  container.classList.add('player-container');
+  container.id = 'playerContainer';
 
-newVideoTag.parentNode.insertBefore(container, newVideoTag);
-container.appendChild(newVideoTag);
+  // **[추가] video에 inline style 있으면 container로 옮기기**
+  const inlineStyle = newVideoTag.getAttribute('style');
+  if (inlineStyle) {
+    container.setAttribute('style', inlineStyle);
+    newVideoTag.removeAttribute('style');
+  }
 
-newVideoTag.id = 'myVideo';
+  // **[추가] video에 class가 있으면 container로 옮기기**
+  const videoClasses = newVideoTag.className.trim();
+  if (videoClasses) {
+    container.className += ' ' + videoClasses;
+    newVideoTag.className = '';
+  }
 
-container.insertAdjacentHTML('beforeend', `
-  <div class="controls">
-    <div class="play-button" id="playBtn"></div>
-    <div class="progress-container" id="progressBar">
-      <div class="progress-buffered" id="progressBuffered"></div>
-      <div class="progress-filled" id="progressFilled"></div>
-      <div class="progress-thumb" id="progressThumb"></div>
-    </div>
-    <div class="time-label" id="timeLabel">0:00</div>
-    <select class="speed-select" id="speedSelect">
-          <option value="0.1">0.1x</option>
-          <option value="0.2">0.2x</option>
-          <option value="0.3">0.3x</option>
-          <option value="0.4">0.4x</option>
-          <option value="0.5">0.5x</option>
-          <option value="0.6">0.6x</option>
-          <option value="0.7">0.7x</option>
-          <option value="0.8">0.8x</option>
-          <option value="0.9">0.9x</option>
-          <option value="1.0" selected>1x</option>
-          <option value="1.1">1.1x</option>
-          <option value="1.2">1.2x</option>
-          <option value="1.3">1.3x</option>
-          <option value="1.4">1.4x</option>
-          <option value="1.5">1.5x</option>
-          <option value="1.6">1.6x</option>
-          <option value="1.7">1.7x</option>
-          <option value="1.8">1.8x</option>
-          <option value="1.9">1.9x</option>
-          <option value="2.0">2x</option>
-          <option value="2.1">2.1x</option>
-          <option value="2.2">2.2x</option>
-          <option value="2.3">2.3x</option>
-          <option value="2.4">2.4x</option>
-          <option value="2.5">2.5x</option>
-          <option value="2.6">2.6x</option>
-          <option value="2.7">2.7x</option>
-          <option value="2.8">2.8x</option>
-          <option value="2.9">2.9x</option>
-          <option value="3.0">3x</option>
-          <option value="3.1">3.1x</option>
-          <option value="3.2">3.2x</option>
-          <option value="3.3">3.3x</option>
-          <option value="3.4">3.4x</option>
-          <option value="3.5">3.5x</option>
-          <option value="3.6">3.6x</option>
-          <option value="3.7">3.7x</option>
-          <option value="3.8">3.8x</option>
-          <option value="3.9">3.9x</option>
-          <option value="4.0">4x</option>
-    </select>
-    <button class="volume-button" id="volumeBtn">
-      <svg width="24" height="24" viewBox="0 0 56 56">
-        <path fill="#FFF" id="speaker"
-          d="M 21.6412 47.5985
-             C 22.9575 47.5985 23.9060 46.6307 23.9060 45.3338
-               L 23.9060 14.4592
-             C 23.9060 13.1623 22.9575 12.0783 21.6025 12.0783
-               C 20.6540 12.0783 20.0152 12.5042 18.9893 13.4720
-               L 10.4528 21.5439
-             C 10.3173 21.6601 10.1431 21.7181 9.9495 21.7181
-               L 4.2005 21.7181
-             C 1.4711 21.7181 0 23.2086 0 26.1122
-               L 0 33.6227
-             C 0 36.5263 1.4711 38.0168 4.2005 38.0168
-               L 9.9495 38.0168
-             C 10.1431 38.0168 10.3173 38.0748 10.4528 38.1910
-               L 18.9893 46.3403
-             C 19.9184 47.2114 20.6927 47.5985 21.6412 47.5985
-             Z" />
-        <path fill="#FFF" id="wave1"
-          d="M 32.6360 38.4233
-             C 33.2941 38.8878 34.2426 38.7330 34.8039 37.9781
-               C 36.3139 35.9456 37.2238 32.9646 37.2238 29.9255
-               C 37.2238 26.8865 36.2945 23.9249 34.8039 21.8536
-               C 34.2426 21.0987 33.3135 20.9439 32.6360 21.4084
-               C 31.7843 21.9698 31.6875 22.9570 32.3069 23.8087
-               C 33.4296 25.3185 34.1071 27.6221 34.1071 29.9255
-               C 34.1071 32.2290 33.3909 34.5325 32.2876 36.0617
-               C 31.7068 36.8941 31.8037 37.8426 32.6360 38.4233
-             Z" />
-        <path fill="#FFF" id="wave2"
-          d="M 40.3595 43.6497
-             C 41.1143 44.1530 42.0436 43.9594 42.5855 43.1851
-               C 45.1405 39.6234 46.6117 34.8809 46.6117 29.9255
-               C 46.6117 24.9508 45.1599 20.2083 42.5855 16.6466
-               C 42.0242 15.8917 41.1143 15.6981 40.3595 16.2014
-               C 39.6238 16.7047 39.5076 17.6532 40.0884 18.4855
-               C 42.1982 21.5826 43.4953 25.6476 43.4953 29.9255
-               C 43.4953 34.2034 42.2370 38.3072 40.0690 41.3656
-               C 39.5270 42.1979 39.6238 43.1464 40.3595 43.6497
-             Z" />
-        <path fill="#FFF" id="wave3"
-          d="M 48.1605 48.9342
-             C 48.8765 49.4181 49.8252 49.2245 50.3865 48.4309
-               C 53.9286 43.3593 56.0000 36.8360 56.0000 29.9255
-               C 56.0000 23.0151 53.9096 16.4724 50.3865 11.4008
-               C 49.8252 10.6072 48.8765 10.4136 48.1605 10.9169
-               C 47.4248 11.4202 47.3086 12.3880 47.8700 13.2010
-               C 50.9863 17.7887 52.9221 23.6732 52.9221 29.9255
-               C 52.9221 36.1779 51.0446 42.1398 47.8700 46.6500
-               C 47.3086 47.4437 47.4248 48.4115 48.1605 48.9342
-             Z" />
-        <path
-          id="slash"
-          fill="none"
-          stroke="#FFF"
-          stroke-width="3"
-          stroke-linecap="round"
-          d="M 10 10 L 46 46"
-          style="display: none;"
-        />
-      </svg>
-      <div class="volume-popup" id="volumePopup">
-        <input
-          type="range"
-          id="volumeSlider"
-          class="volume-slider-vertical"
-          min="0" max="1" step="0.05" value="1"
-        />
+  newVideoTag.parentNode.insertBefore(container, newVideoTag);
+  container.appendChild(newVideoTag);
+
+  newVideoTag.id = 'myVideo';
+
+  container.insertAdjacentHTML('beforeend', `
+    <div class="controls">
+      <div class="play-button" id="playBtn"></div>
+      <div class="progress-container" id="progressBar">
+        <div class="progress-buffered" id="progressBuffered"></div>
+        <div class="progress-filled" id="progressFilled"></div>
+        <div class="progress-thumb" id="progressThumb"></div>
       </div>
-    </button>
-    <button class="fullscreen-button" id="fullscreenBtn">
-      <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M3 3H9V5H5V9H3V3Z" fill="#FFF" />
-        <path d="M3 21H9V19H5V15H3V21Z" fill="#FFF" />
-        <path d="M15 21H21V15H19V19H15V21Z" fill="#FFF" />
-        <path d="M21 3H15V5H19V9H21V3Z" fill="#FFF" />
-      </svg>
-      <svg class="exit-fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M9 9H3V7H7V3H9V9Z" fill="#FFF" />
-        <path d="M9 15H3V17H7V21H9V15Z" fill="#FFF" />
-        <path d="M21 15H15V21H17V17H21V15Z" fill="#FFF" />
-        <path d="M15 9.00012H21V7.00012H17V3.00012H15V9.00012Z" fill="#FFF" />
-      </svg>
-    </button>
-  </div>
-`);
+      <div class="time-label" id="timeLabel">0:00</div>
+      <select class="speed-select" id="speedSelect">
+            <option value="0.1">0.1x</option>
+            <option value="0.2">0.2x</option>
+            <option value="0.3">0.3x</option>
+            <option value="0.4">0.4x</option>
+            <option value="0.5">0.5x</option>
+            <option value="0.6">0.6x</option>
+            <option value="0.7">0.7x</option>
+            <option value="0.8">0.8x</option>
+            <option value="0.9">0.9x</option>
+            <option value="1.0" selected>1x</option>
+            <option value="1.1">1.1x</option>
+            <option value="1.2">1.2x</option>
+            <option value="1.3">1.3x</option>
+            <option value="1.4">1.4x</option>
+            <option value="1.5">1.5x</option>
+            <option value="1.6">1.6x</option>
+            <option value="1.7">1.7x</option>
+            <option value="1.8">1.8x</option>
+            <option value="1.9">1.9x</option>
+            <option value="2.0">2x</option>
+            <option value="2.1">2.1x</option>
+            <option value="2.2">2.2x</option>
+            <option value="2.3">2.3x</option>
+            <option value="2.4">2.4x</option>
+            <option value="2.5">2.5x</option>
+            <option value="2.6">2.6x</option>
+            <option value="2.7">2.7x</option>
+            <option value="2.8">2.8x</option>
+            <option value="2.9">2.9x</option>
+            <option value="3.0">3x</option>
+            <option value="3.1">3.1x</option>
+            <option value="3.2">3.2x</option>
+            <option value="3.3">3.3x</option>
+            <option value="3.4">3.4x</option>
+            <option value="3.5">3.5x</option>
+            <option value="3.6">3.6x</option>
+            <option value="3.7">3.7x</option>
+            <option value="3.8">3.8x</option>
+            <option value="3.9">3.9x</option>
+            <option value="4.0">4x</option>
+      </select>
+      <button class="volume-button" id="volumeBtn">
+        <svg width="24" height="24" viewBox="0 0 56 56">
+          <path fill="#FFF" id="speaker"
+            d="M 21.6412 47.5985
+               C 22.9575 47.5985 23.9060 46.6307 23.9060 45.3338
+                 L 23.9060 14.4592
+               C 23.9060 13.1623 22.9575 12.0783 21.6025 12.0783
+                 C 20.6540 12.0783 20.0152 12.5042 18.9893 13.4720
+                 L 10.4528 21.5439
+               C 10.3173 21.6601 10.1431 21.7181 9.9495 21.7181
+                 L 4.2005 21.7181
+               C 1.4711 21.7181 0 23.2086 0 26.1122
+                 L 0 33.6227
+               C 0 36.5263 1.4711 38.0168 4.2005 38.0168
+                 L 9.9495 38.0168
+               C 10.1431 38.0168 10.3173 38.0748 10.4528 38.1910
+                 L 18.9893 46.3403
+               C 19.9184 47.2114 20.6927 47.5985 21.6412 47.5985
+               Z" />
+          <path fill="#FFF" id="wave1"
+            d="M 32.6360 38.4233
+               C 33.2941 38.8878 34.2426 38.7330 34.8039 37.9781
+                 C 36.3139 35.9456 37.2238 32.9646 37.2238 29.9255
+                 C 37.2238 26.8865 36.2945 23.9249 34.8039 21.8536
+                 C 34.2426 21.0987 33.3135 20.9439 32.6360 21.4084
+                 C 31.7843 21.9698 31.6875 22.9570 32.3069 23.8087
+                 C 33.4296 25.3185 34.1071 27.6221 34.1071 29.9255
+                 C 34.1071 32.2290 33.3909 34.5325 32.2876 36.0617
+                 C 31.7068 36.8941 31.8037 37.8426 32.6360 38.4233
+               Z" />
+          <path fill="#FFF" id="wave2"
+            d="M 40.3595 43.6497
+               C 41.1143 44.1530 42.0436 43.9594 42.5855 43.1851
+                 C 45.1405 39.6234 46.6117 34.8809 46.6117 29.9255
+                 C 46.6117 24.9508 45.1599 20.2083 42.5855 16.6466
+                 C 42.0242 15.8917 41.1143 15.6981 40.3595 16.2014
+                 C 39.6238 16.7047 39.5076 17.6532 40.0884 18.4855
+                 C 42.1982 21.5826 43.4953 25.6476 43.4953 29.9255
+                 C 43.4953 34.2034 42.2370 38.3072 40.0690 41.3656
+                 C 39.5270 42.1979 39.6238 43.1464 40.3595 43.6497
+               Z" />
+          <path fill="#FFF" id="wave3"
+            d="M 48.1605 48.9342
+               C 48.8765 49.4181 49.8252 49.2245 50.3865 48.4309
+                 C 53.9286 43.3593 56.0000 36.8360 56.0000 29.9255
+                 C 56.0000 23.0151 53.9096 16.4724 50.3865 11.4008
+                 C 49.8252 10.6072 48.8765 10.4136 48.1605 10.9169
+                 C 47.4248 11.4202 47.3086 12.3880 47.8700 13.2010
+                 C 50.9863 17.7887 52.9221 23.6732 52.9221 29.9255
+                 C 52.9221 36.1779 51.0446 42.1398 47.8700 46.6500
+                 C 47.3086 47.4437 47.4248 48.4115 48.1605 48.9342
+               Z" />
+          <path
+            id="slash"
+            fill="none"
+            stroke="#FFF"
+            stroke-width="3"
+            stroke-linecap="round"
+            d="M 10 10 L 46 46"
+            style="display: none;"
+          />
+        </svg>
+        <div class="volume-popup" id="volumePopup">
+          <input
+            type="range"
+            id="volumeSlider"
+            class="volume-slider-vertical"
+            min="0" max="1" step="0.05" value="1"
+          />
+        </div>
+      </button>
+      <button class="fullscreen-button" id="fullscreenBtn">
+        <svg class="fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M3 3H9V5H5V9H3V3Z" fill="#FFF" />
+          <path d="M3 21H9V19H5V15H3V21Z" fill="#FFF" />
+          <path d="M15 21H21V15H19V19H15V21Z" fill="#FFF" />
+          <path d="M21 3H15V5H19V9H21V3Z" fill="#FFF" />
+        </svg>
+        <svg class="exit-fullscreen-icon" width="24" height="24" viewBox="0 0 24 24" fill="none">
+          <path d="M9 9H3V7H7V3H9V9Z" fill="#FFF" />
+          <path d="M9 15H3V17H7V21H9V15Z" fill="#FFF" />
+          <path d="M21 15H15V21H17V17H21V15Z" fill="#FFF" />
+          <path d="M15 9.00012H21V7.00012H17V3.00012H15V9.00012Z" fill="#FFF" />
+        </svg>
+      </button>
+    </div>
+  `);
 }
 
 
 // 새로 추가되는 노드에 대해 <video> 감시 -> 위 래핑 함수 호출
 const observer = new MutationObserver(function(mutations) {
-mutations.forEach(function(mutation) {
-  mutation.addedNodes.forEach(function(node) {
-    // nodeType이 ELEMENT_NODE인지 확인
-    if (node.nodeType === Node.ELEMENT_NODE) {
-      // (1) node.matches 함수가 있는지 먼저 체크
-      if (
-        typeof node.matches === 'function' &&
-        node.matches('video:not(#myVideo)')
-      ) {
-        wrapVideoElement(node);
-      }
-      // (2) 하위에서 video:not(#myVideo) 찾을 수 있는지 체크
-      else if (typeof node.querySelectorAll === 'function') {
-        const videos = node.querySelectorAll('video:not(#myVideo)');
-        if (videos.length) {
-          videos.forEach(function(v) {
-            wrapVideoElement(v);
-          });
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      // nodeType이 ELEMENT_NODE인지 확인
+      if (node.nodeType === Node.ELEMENT_NODE) {
+        // (1) node.matches 함수가 있는지 먼저 체크
+        if (
+          typeof node.matches === 'function' &&
+          node.matches('video:not(#myVideo)')
+        ) {
+          wrapVideoElement(node);
+        }
+        // (2) 하위에서 video:not(#myVideo) 찾을 수 있는지 체크
+        else if (typeof node.querySelectorAll === 'function') {
+          const videos = node.querySelectorAll('video:not(#myVideo)');
+          if (videos.length) {
+            videos.forEach(function(v) {
+              wrapVideoElement(v);
+            });
+          }
         }
       }
-    }
+    });
   });
-});
 });
 
 // body 전체에서 자식이 추가되는지 감시
