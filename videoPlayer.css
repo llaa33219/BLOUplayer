@@ -1,5 +1,13 @@
 /* videoPlayer.css */
-
+  body {
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: sans-serif;
+  }
+  
   /* 플레이어 컨테이너 */
   .player-container {
     width: 1200px;
