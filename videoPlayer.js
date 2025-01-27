@@ -602,17 +602,21 @@ container.insertAdjacentHTML('beforeend', `
 }
 
 
-// 새로 추가되는 노드에 대해 <video> 감지 -> 위 래핑 함수 호출
+// 새로 추가되는 노드에 대해 <video> 감시 -> 위 래핑 함수 호출
 const observer = new MutationObserver(function(mutations) {
 mutations.forEach(function(mutation) {
   mutation.addedNodes.forEach(function(node) {
+    // nodeType이 ELEMENT_NODE인지 확인
     if (node.nodeType === Node.ELEMENT_NODE) {
-      // (1) 자신이 곧바로 video인가?
-      if (node.matches && node.matches('video:not(#myVideo)')) {
+      // (1) node.matches 함수가 있는지 먼저 체크
+      if (
+        typeof node.matches === 'function' &&
+        node.matches('video:not(#myVideo)')
+      ) {
         wrapVideoElement(node);
       }
-      // (2) 또는 하위에 video가 있는가?
-      else if (node.querySelectorAll) {
+      // (2) 하위에서 video:not(#myVideo) 찾을 수 있는지 체크
+      else if (typeof node.querySelectorAll === 'function') {
         const videos = node.querySelectorAll('video:not(#myVideo)');
         if (videos.length) {
           videos.forEach(function(v) {
