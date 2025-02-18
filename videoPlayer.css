@@ -22,8 +22,6 @@
 video {
   display: block;
   background: #000;
-  width: 100%;
-  height: auto;
 }
 
 /* 컨트롤 바 */
