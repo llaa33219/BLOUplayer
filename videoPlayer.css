@@ -7,8 +7,6 @@
 
 /* 플레이어 컨테이너 */
 .player-container {
-  width: 1200px;
-  max-width: 95%;
   position: relative;
   background: #000;
   overflow: hidden;
