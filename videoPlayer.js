@@ -123,18 +123,37 @@
         }
       }
 
+      // *** 여기서부터 수정된 seekVideo 함수 ***
       function seekVideo(e) {
         try {
           if (!video || !progressBar) return;
           const rect = progressBar.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
           const width = rect.width;
-          const seekTo = (clickX / width) * video.duration;
-          video.currentTime = seekTo;
+          const desiredPosition = clickX / width;
+
+          // duration 정보를 아직 모르는 경우(또는 무한대 등)에도 강제로 로드 후 이동
+          if (!video.duration || isNaN(video.duration) || video.duration === Infinity) {
+            const handleLoadedMetadata = () => {
+              let seekTo = desiredPosition * video.duration;
+              if (seekTo < 0) seekTo = 0;
+              if (seekTo > video.duration) seekTo = video.duration;
+              video.currentTime = seekTo;
+              video.removeEventListener('loadedmetadata', handleLoadedMetadata);
+            };
+            video.addEventListener('loadedmetadata', handleLoadedMetadata);
+            video.load();
+          } else {
+            let seekTo = desiredPosition * video.duration;
+            if (seekTo < 0) seekTo = 0;
+            if (seekTo > video.duration) seekTo = video.duration;
+            video.currentTime = seekTo;
+          }
         } catch (e) {
           console.error(e);
         }
       }
+      // *** 수정된 seekVideo 함수 끝 ***
 
       function handleProgressHover(e) {
         try {
