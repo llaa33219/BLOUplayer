@@ -219,12 +219,35 @@
         }
       }
 
+      // 수정된 fullscreenchange 이벤트 리스너: 전체화면일 때 컨테이너와 비디오가 화면 전체를 차지하며 최우선으로 표시되고, 비디오가 화면 밖으로 빠져나가지 않도록 처리
       document.addEventListener('fullscreenchange', () => {
         try {
           if (document.fullscreenElement === container) {
             fullscreenBtn?.classList.add('fullscreen-active');
+            container.style.width = '100%';
+            container.style.height = '100%';
+            container.style.position = 'fixed';
+            container.style.top = '0';
+            container.style.left = '0';
+            container.style.zIndex = '9999';
+            if (video) {
+              video.style.maxWidth = '100vw';
+              video.style.maxHeight = '100vh';
+              video.style.objectFit = 'contain';
+            }
           } else {
             fullscreenBtn?.classList.remove('fullscreen-active');
+            container.style.width = '';
+            container.style.height = '';
+            container.style.position = '';
+            container.style.top = '';
+            container.style.left = '';
+            container.style.zIndex = '';
+            if (video) {
+              video.style.maxWidth = '';
+              video.style.maxHeight = '';
+              video.style.objectFit = '';
+            }
           }
         } catch (e) {
           console.error(e);
