@@ -526,5 +526,17 @@
       });
     });
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // (D) 0.5초마다 강제 스캔: 혹시 놓친 <video>가 있다면 래핑
+    setInterval(() => {
+      try {
+        const unwrappedVideos = document.querySelectorAll('video:not(.wrapped)');
+        if (unwrappedVideos.length > 0) {
+          unwrappedVideos.forEach(v => wrapVideoElement(v));
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }, 500); // 500ms 간격
   }
 })();
