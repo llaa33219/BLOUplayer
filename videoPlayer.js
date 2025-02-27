@@ -1,22 +1,27 @@
-(function () {
-  // 서버 사이드 렌더링(SSR)에서 document나 window가 없을 수 있으므로 체크
+(function() {
+  // -------------------------------------------------
+  // (1) 서버 사이드 렌더링(SSR) 환경인지 체크
+  // -------------------------------------------------
   if (typeof window === 'undefined' || typeof document === 'undefined') {
+    // SSR 환경이면 document, window가 없으므로 실행 중단
     return;
   }
 
-  // DOM이 이미 로딩된 상태면 즉시 실행, 아니면 DOMContentLoaded 이후 실행
+  // -------------------------------------------------
+  // (2) DOM 로딩 상태에 따라 초기화 함수 실행
+  // -------------------------------------------------
   if (document.readyState !== 'loading') {
+    // 이미 DOM이 로딩된 상태면 즉시 실행
     initCustomVideoPlayers();
   } else {
+    // 아직 로딩 중이면 DOMContentLoaded 이후 실행
     document.addEventListener('DOMContentLoaded', initCustomVideoPlayers);
   }
 
-  // 원본 코드의 DOMContentLoaded 내부 내용을 그대로 옮겨온 함수
+  // =====================================================================
+  // 여기서부터는 원본 코드 그대로, 단지 initCustomVideoPlayers() 함수로 래핑
+  // =====================================================================
   function initCustomVideoPlayers() {
-    // -------------------------------------------------------------------------
-    // 원본 코드 시작 (내용 100% 동일)
-    // -------------------------------------------------------------------------
-    
     // 플레이어마다 고유 식별자로 사용
     let videoPlayerCounter = 0;
 
@@ -242,7 +247,8 @@
           if (!container) return;
           const rect = container.getBoundingClientRect();
           const bottomThreshold = rect.bottom - 80;
-          let isOverBottom = (e.clientY >= bottomThreshold && e.clientY <= rect.bottom);
+          let isOverBottom =
+            e.clientY >= bottomThreshold && e.clientY <= rect.bottom;
           let isOverVolume = false;
           if (volumeBtn) {
             const vb = volumeBtn.getBoundingClientRect();
@@ -306,8 +312,13 @@
     function wrapVideoElement(newVideoTag) {
       try {
         if (!newVideoTag) return;
-        // 이미 래핑된 경우 건너뜀
-        if (newVideoTag.parentElement && newVideoTag.parentElement.classList.contains('player-container')) return;
+        // 이미 래핑된 경우는 건너뜀
+        if (
+          newVideoTag.parentElement &&
+          newVideoTag.parentElement.classList.contains('player-container')
+        ) {
+          return;
+        }
 
         videoPlayerCounter++;
         const uid = videoPlayerCounter; // 고유 접미사
@@ -339,7 +350,9 @@
 
         newVideoTag.id = `myVideo-${uid}`;
 
-        container.insertAdjacentHTML('beforeend', `
+        container.insertAdjacentHTML(
+          'beforeend',
+          `
           <div class="controls">
             <div class="play-button" id="playBtn-${uid}"></div>
             <div class="progress-container" id="progressBar-${uid}">
@@ -476,7 +489,8 @@
               </svg>
             </button>
           </div>
-        `);
+        `
+        );
 
         // 플레이어 초기화 (이벤트 연결 및 초기 설정)
         initializePlayer(container, uid);
@@ -512,9 +526,5 @@
       });
     });
     observer.observe(document.body, { childList: true, subtree: true });
-
-    // -------------------------------------------------------------------------
-    // 원본 코드 끝
-    // -------------------------------------------------------------------------
   }
 })();
