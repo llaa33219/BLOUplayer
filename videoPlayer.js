@@ -219,7 +219,8 @@
         }
       }
 
-      // 수정된 fullscreenchange 이벤트 리스너: 전체화면일 때 컨테이너와 비디오가 화면 전체를 차지하며 최우선으로 표시되고, 비디오가 화면 밖으로 빠져나가지 않도록 처리
+      // 수정된 fullscreenchange 이벤트 리스너: 전체화면일 때 컨테이너와 비디오가 화면 전체를 차지하며 최우선으로 표시되고,
+      // 비디오가 화면 밖으로 빠져나가지 않고, 화면보다 작은 경우에도 전체가 되도록 처리
       document.addEventListener('fullscreenchange', () => {
         try {
           if (document.fullscreenElement === container) {
@@ -231,8 +232,8 @@
             container.style.left = '0';
             container.style.zIndex = '9999';
             if (video) {
-              video.style.maxWidth = '100vw';
-              video.style.maxHeight = '100vh';
+              video.style.width = '100%';
+              video.style.height = '100%';
               video.style.objectFit = 'contain';
             }
           } else {
@@ -244,8 +245,8 @@
             container.style.left = '';
             container.style.zIndex = '';
             if (video) {
-              video.style.maxWidth = '';
-              video.style.maxHeight = '';
+              video.style.width = '';
+              video.style.height = '';
               video.style.objectFit = '';
             }
           }
