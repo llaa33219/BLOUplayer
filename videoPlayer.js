@@ -43,7 +43,7 @@
 
       let isHoveringProgress = false;
       let isFullscreen = false;
-      let idleTimeout = null; // 마우스가 멈춘 후 컨트롤 숨김을 위한 타이머
+      let hasHoveredControls = false; // 사용자가 하단 영역(또는 볼륨 영역)에 한번이라도 진입한 경우 표시
 
       function updateVolumeIcon() {
         try {
@@ -281,13 +281,16 @@
         }
       }
 
-      // 수정된 마우스 움직임 핸들러: 마우스가 하단(또는 볼륨 관련 영역)에 있으면 컨트롤을 보이고, 그렇지 않으면 숨김 처리
+      // 수정된 마우스 움직임 핸들러: 
+      // - 초기 상태에는 항상 컨트롤이 보인다.
+      // - 사용자가 하단(또는 볼륨 관련) 영역에 마우스를 올려본 이후부터는, 해당 영역에 마우스가 있으면 컨트롤이 보이고,
+      //   영역을 벗어나면 즉시 컨트롤을 숨긴다.
       function handleMouseMove(e) {
         try {
           if (!container) return;
           const rect = container.getBoundingClientRect();
           const bottomThreshold = rect.bottom - 80;
-          let isOverBottom = (e.clientY >= bottomThreshold && e.clientY <= rect.bottom);
+          const isOverBottom = (e.clientY >= bottomThreshold && e.clientY <= rect.bottom);
           let isOverVolume = false;
           if (volumeBtn) {
             const vb = volumeBtn.getBoundingClientRect();
@@ -307,29 +310,25 @@
               isOverVolume = true;
             }
           }
-          // 이전 타이머가 있으면 초기화
-          if (idleTimeout) {
-            clearTimeout(idleTimeout);
-          }
+          // 만약 아직 사용자가 하단 영역에 진입해본 적이 없다면, 컨트롤은 항상 보인다.
+          // 한 번이라도 진입하면 hasHoveredControls 플래그를 true로 설정한다.
           if (isOverBottom || isOverVolume) {
+            hasHoveredControls = true;
             container.classList.add('show-controls');
-            // 마우스가 일정 시간(2초)동안 움직임이 없으면 컨트롤 숨김 처리
-            idleTimeout = setTimeout(() => {
-              container.classList.remove('show-controls');
-            }, 2000);
           } else {
-            container.classList.remove('show-controls');
+            if (hasHoveredControls) {
+              container.classList.remove('show-controls');
+            }
           }
         } catch (e) {
           console.error(e);
         }
       }
       
-      // 마우스가 컨테이너를 완전히 벗어나면 컨트롤 숨김
+      // 마우스가 컨테이너를 완전히 벗어나면 (사용자가 컨테이너 밖으로 이동하면) 컨트롤 숨김
       container.addEventListener('mouseleave', () => {
-        container.classList.remove('show-controls');
-        if (idleTimeout) {
-          clearTimeout(idleTimeout);
+        if (hasHoveredControls) {
+          container.classList.remove('show-controls');
         }
       });
 
@@ -353,20 +352,11 @@
       fullscreenBtn?.addEventListener('click', toggleFullscreen);
       container.addEventListener('mousemove', handleMouseMove);
 
-      // 초기화: 비디오 볼륨, 버튼, 진행률 등 설정
-      if (video) {
-        video.volume = 1.0;
-        updateVolumeIcon();
-      }
-      updatePlayButton();
-      updateProgress();
-      handleSpeedChange();
-
-      // 초기 상태에서 재생 바(컨트롤)를 보이게 하고, 일정 시간 후 자동 숨김 처리
+      // 초기 상태에서는 컨트롤을 무조건 보이도록 설정 (아직 사용자가 하단 영역에 진입하기 전)
       container.classList.add('show-controls');
-      idleTimeout = setTimeout(() => {
-        container.classList.remove('show-controls');
-      }, 3000);
+      // -------------------------------------------------------------------------
+      // 원본 코드 끝
+      // -------------------------------------------------------------------------
     }
 
     // (B) 새로 생성되는 <video> 요소를 자동 래핑하는 함수
