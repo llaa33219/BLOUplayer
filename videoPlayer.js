@@ -43,6 +43,7 @@
 
       let isHoveringProgress = false;
       let isFullscreen = false;
+      let idleTimeout = null; // 마우스가 멈춘 후 컨트롤 숨김을 위한 타이머
 
       function updateVolumeIcon() {
         try {
@@ -280,6 +281,7 @@
         }
       }
 
+      // 수정된 마우스 움직임 핸들러: 마우스가 하단(또는 볼륨 관련 영역)에 있으면 컨트롤을 보이고, 그렇지 않으면 숨김 처리
       function handleMouseMove(e) {
         try {
           if (!container) return;
@@ -305,20 +307,31 @@
               isOverVolume = true;
             }
           }
+          // 이전 타이머가 있으면 초기화
+          if (idleTimeout) {
+            clearTimeout(idleTimeout);
+          }
           if (isOverBottom || isOverVolume) {
             container.classList.add('show-controls');
+            // 마우스가 일정 시간(2초)동안 움직임이 없으면 컨트롤 숨김 처리
+            idleTimeout = setTimeout(() => {
+              container.classList.remove('show-controls');
+            }, 2000);
           } else {
             container.classList.remove('show-controls');
-          }
-          // 사용자가 마우스를 움직이면 힌트는 숨김 처리 (한번만 표시)
-          const controlsHint = container.querySelector(`#controlsHint-${uid}`);
-          if (controlsHint && controlsHint.style.display !== 'none') {
-            controlsHint.style.display = 'none';
           }
         } catch (e) {
           console.error(e);
         }
       }
+      
+      // 마우스가 컨테이너를 완전히 벗어나면 컨트롤 숨김
+      container.addEventListener('mouseleave', () => {
+        container.classList.remove('show-controls');
+        if (idleTimeout) {
+          clearTimeout(idleTimeout);
+        }
+      });
 
       // 이벤트 연결
       playBtn?.addEventListener('click', togglePlay);
@@ -340,7 +353,7 @@
       fullscreenBtn?.addEventListener('click', toggleFullscreen);
       container.addEventListener('mousemove', handleMouseMove);
 
-      // 초기화
+      // 초기화: 비디오 볼륨, 버튼, 진행률 등 설정
       if (video) {
         video.volume = 1.0;
         updateVolumeIcon();
@@ -349,12 +362,10 @@
       updateProgress();
       handleSpeedChange();
 
-      // 사용자가 아무런 동작을 하지 않아도, 3초 후 힌트를 자동으로 숨김 처리
-      setTimeout(() => {
-        const controlsHint = container.querySelector(`#controlsHint-${uid}`);
-        if (controlsHint) {
-          controlsHint.style.display = 'none';
-        }
+      // 초기 상태에서 재생 바(컨트롤)를 보이게 하고, 일정 시간 후 자동 숨김 처리
+      container.classList.add('show-controls');
+      idleTimeout = setTimeout(() => {
+        container.classList.remove('show-controls');
       }, 3000);
     }
 
@@ -531,12 +542,6 @@
                 <path d="M15 9.00012H21V7.00012H17V3.00012H15V9.00012Z" fill="#FFF" />
               </svg>
             </button>
-          </div>
-        `);
-        // 새로 추가: 사용자에게 재생 바 표시 방법을 알려주는 힌트 (원본 그대로 유지 후 추가)
-        container.insertAdjacentHTML('beforeend', `
-          <div class="controls-hint" id="controlsHint-${uid}" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #FFF; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
-            마우스를 가져가면 재생 바가 표시됩니다.
           </div>
         `);
 
