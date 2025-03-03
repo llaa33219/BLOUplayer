@@ -310,6 +310,11 @@
           } else {
             container.classList.remove('show-controls');
           }
+          // 사용자가 마우스를 움직이면 힌트는 숨김 처리 (한번만 표시)
+          const controlsHint = container.querySelector(`#controlsHint-${uid}`);
+          if (controlsHint && controlsHint.style.display !== 'none') {
+            controlsHint.style.display = 'none';
+          }
         } catch (e) {
           console.error(e);
         }
@@ -343,6 +348,14 @@
       updatePlayButton();
       updateProgress();
       handleSpeedChange();
+
+      // 사용자가 아무런 동작을 하지 않아도, 3초 후 힌트를 자동으로 숨김 처리
+      setTimeout(() => {
+        const controlsHint = container.querySelector(`#controlsHint-${uid}`);
+        if (controlsHint) {
+          controlsHint.style.display = 'none';
+        }
+      }, 3000);
     }
 
     // (B) 새로 생성되는 <video> 요소를 자동 래핑하는 함수
@@ -518,6 +531,12 @@
                 <path d="M15 9.00012H21V7.00012H17V3.00012H15V9.00012Z" fill="#FFF" />
               </svg>
             </button>
+          </div>
+        `);
+        // 새로 추가: 사용자에게 재생 바 표시 방법을 알려주는 힌트 (원본 그대로 유지 후 추가)
+        container.insertAdjacentHTML('beforeend', `
+          <div class="controls-hint" id="controlsHint-${uid}" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); color: #FFF; padding: 5px 10px; border-radius: 5px; font-size: 12px;">
+            마우스를 가져가면 재생 바가 표시됩니다.
           </div>
         `);
 
